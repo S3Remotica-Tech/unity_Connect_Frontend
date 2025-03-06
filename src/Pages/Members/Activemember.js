@@ -17,6 +17,7 @@ import closecircle from '../../Asset/Icons/close-circle.svg';
 
 function ActiveMember({ state, onSelectMember }) {
 
+
   const dispatch = useDispatch();
   const [openMenu, setOpenMenu] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -51,6 +52,7 @@ function ActiveMember({ state, onSelectMember }) {
 
 
  const formattedDate = moment(members.Joining_Date).format("DD-MM-YYYY");
+
   useEffect(() => {
     if (state.Member.statusCodeMemberList === 200) {
       dispatch({ type: 'CLEAR_STATUS_CODE_MEMBER_LIST' });
@@ -125,8 +127,10 @@ function ActiveMember({ state, onSelectMember }) {
   }, []);
 
   const handleClickAddMember = () => {
+
     setShowModal(true);
     setSelectedMember("");
+
   }
 
 

@@ -5,11 +5,11 @@ import { AiOutlinePlus } from 'react-icons/ai';
 import { useDispatch } from "react-redux";
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import moment from "moment";
 import closecircle from '../../Asset/Icons/close-circle.svg';
 
 
 function MemberModal({ state, memberData, onClose }) {
-
 
     const dispatch = useDispatch();
 
@@ -20,7 +20,7 @@ function MemberModal({ state, memberData, onClose }) {
     const [mobileNo, setMobileNo] = useState("");
     const [address, setAddress] = useState("");
     const [file, setFile] = useState("");
-    const[showImage, setShowImage] = useState("");
+    const [showImage, setShowImage] = useState("");
     const [errors, setErrors] = useState({});
     const [noChanges, setNoChanges] = useState("");
 
@@ -41,13 +41,23 @@ function MemberModal({ state, memberData, onClose }) {
     useEffect(() => {
         if (state.Member.statusCodeForAddUser === 200) {
             dispatch({ type: 'MEMBERLIST' });
+            dispatch({ type: 'CLEAR_STATUS_CODES' })
         }
     }, [state.Member.statusCodeForAddUser]);
+
+
+    useEffect(() => {
+        dispatch({ type: 'GET_MEMBER_ID' });
+    }, []);
 
     useEffect(() => {
         setNoChanges("");
     }, [memberId, userName, email, mobileNo, address, joiningDate, file]);
 
+
+    const formattedDate = moment(memberData.Joining_Date).format("YYYY-MM-DD");
+
+   
     const validate = () => {
         let tempErrors = {};
         if (!userName) tempErrors.userName = "User Name is required";
@@ -64,6 +74,7 @@ function MemberModal({ state, memberData, onClose }) {
         return Object.keys(tempErrors).length === 0;
     };
 
+
     const handleChange = (field, value) => {
         if (field === "memberId") setMemberId(value);
         if (field === "userName") setUserName(value);
@@ -75,6 +86,7 @@ function MemberModal({ state, memberData, onClose }) {
 
         setErrors((prevErrors) => ({ ...prevErrors, [field]: "" }));
     };
+
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -93,67 +105,66 @@ function MemberModal({ state, memberData, onClose }) {
         onClose()
     }
 
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setNoChanges("");
 
-        let valid = true;
-        if (memberData) {
-            const isUnchanged =
-                memberId === memberData.Member_Id &&
-                userName === memberData.User_Name &&
-                email === memberData.Email_Id &&
-                mobileNo === memberData.Mobile_No &&
-                address === memberData.Address &&
-                joiningDate === memberData.Joining_date &&
-                (!file || file.name === memberData.file);
+        if (!userName && !email && !mobileNo && !joiningDate && !address) {
+            setNoChanges("Please fill in all the required fields.");
+            return;
+        }
+
+        const isChanged = memberData && (
+            userName.trim() !== (memberData.User_Name || '').trim() ||
+            email.trim() !== (memberData.Email_Id || '').trim() ||
+            String(mobileNo).trim() !== String((memberData.Mobile_No || '')).trim() ||
+            ((joiningDate && memberData.Joining_date) &&
+                moment(joiningDate).format('YYYY-MM-DD') !== moment(memberData.Joining_date).format('YYYY-MM-DD')) ||
+            address.trim() !== (memberData.Address || '').trim() ||
+            (file && file.name !== memberData.file)
+        );
 
 
-            if (isUnchanged) {
-                setNoChanges("No Changes Detected");
-                return;
-            } else {
-                setNoChanges("");
-            }
+        if (memberData && !isChanged) {
+            setNoChanges("No Changes Detected");
+            return;
         }
 
         if (!validate()) {
             return;
         }
 
-        if (valid) {
-            const payload = {
-                user_name: userName,
-                email_id: email,
-                mobile_no: mobileNo,
-                joining_date: joiningDate,
-                address: address,
-                file: file
-            };
+        const payload = {
+            Member_Id: memberId,
+            user_name: userName,
+            email_id: email,
+            mobile_no: mobileNo,
+            joining_date: joiningDate,
+            address: address,
+            file: file,
+        };
 
-            const Editpayload = {
+        const Editpayload = {
+            Member_Id: memberId,
+            user_name: userName,
+            email_id: email,
+            mobile_no: mobileNo,
+            joining_date: joiningDate,
+            address: address,
+            document_url: memberData?.Document_Url,
+            id: memberData.Id,
+        };
 
-                user_name: userName,
-                email_id: email,
-                mobile_no: mobileNo,
-                joining_date: joiningDate,
-                address: address,
-                // file: file ? file : memberData?.file,
-                document_url: memberData?.Document_Url,
-                id: memberData.Id
+        dispatch({
+            type: 'MEMBERINFO',
+            payload: memberData ? Editpayload : payload,
+        });
 
-            };
-
-            dispatch({
-                type: 'MEMBERINFO',
-                payload: memberData ? Editpayload : payload,
-            });
-            setNoChanges("");
-        }
-
-
+        setNoChanges("");
         onClose();
     };
+
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -167,20 +178,27 @@ function MemberModal({ state, memberData, onClose }) {
                     </button>
                 </div>
 
-                {noChanges && (
-                        <div className="flex items-center justify-center mt-8 text-red-500 text-sm font-semibold">
-                            <MdError className="text-sm mr-2" />
-                            <p>{noChanges}</p>
-                        </div>
-                    )}
                 <div className="space-y-1 mt-2">
                     <div className="flex gap-4">
+
+
+
                         <div className="w-1/2">
                             <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">Member ID</label>
-                            <input data-testid='input-member-id' type="text" className="w-full p-2 h-10 border rounded-lg" value={memberId} 
-                            onChange={(e) => handleChange("memberId", e.target.value)} />
-                            {errors.memberId && <p className="text-red-500 flex items-center gap-1 mt-1 text-xs"><MdError size={14} /> {errors.memberId}</p>}
+                            <input
+                                data-testid='input-member-id'
+                                type="text"
+                                className="w-full p-2 h-10 border rounded-lg"
+                                value={state?.Member?.GetMemberId?.memberId || ''}
+                                readOnly
+                            />
+                            {errors.memberId && (
+                                <p className="text-red-500 flex items-center gap-1 mt-1 text-xs">
+                                    <MdError size={14} /> {errors.memberId}
+                                </p>
+                            )}
                         </div>
+
 
                         <div className="w-1/2">
                             <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">User Name</label>
@@ -208,7 +226,13 @@ function MemberModal({ state, memberData, onClose }) {
 
                     <div>
                         <label className="block font-medium text-sm font-Gilroy tracking-normal mb-1">Joining Date</label>
-                        <input data-testid='input-joining-data' type="date" className=" w-56 p-2 h-10 border rounded-lg" value={joiningDate} onChange={(e) => handleChange("joiningDate", e.target.value)} />
+                        <input
+                            data-testid='input-joining-data'
+                            type="date"
+                            className="w-56 p-2 h-10 border rounded-lg"
+                            value={joiningDate ? formattedDate : ""}
+                            onChange={(e) => handleChange("joiningDate", e.target.value)}
+                        />
                         {errors.joiningDate && <p className="text-red-500 flex items-center gap-1 mt-1 text-xs"><MdError size={14} /> {errors.joiningDate}</p>}
                     </div>
 
@@ -224,13 +248,18 @@ function MemberModal({ state, memberData, onClose }) {
                         <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">Add Documents</label>
                         <div className="border rounded px-2 py-4 flex items-center justify-center relative w-28 mb-1">
                             <input type="file" className="absolute inset-0 opacity-0 w-full h-full" onChange={handleFileChange} />
-                             {memberData && <img src={memberData.Document_Url} alt="Selected" />}
+                            {memberData && <img src={memberData.Document_Url} alt="Selected" />}
                             {showImage ? <img src={showImage} alt="Selected" /> : <AiOutlinePlus size={20} />}
                         </div>
                         <p className="font-medium text-xs font-Gilroy mb-3">Note: File should be .JPG, .PDF, .PNG (max 2MB)</p>
                     </div>
 
-                  
+                    {noChanges && (
+                        <div className="flex items-center justify-center mt-8 text-red-500 text-sm font-semibold">
+                            <MdError className="text-sm mr-2" />
+                            <p>{noChanges}</p>
+                        </div>
+                    )}
                     <div className="mt-2">
                         <button type="submit" className="w-full bg-black text-white p-2 rounded-lg"
                             onClick={handleSubmit}>{memberData ? "Save Changes" : "Add Member"}</button>

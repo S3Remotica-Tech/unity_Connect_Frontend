@@ -1,5 +1,5 @@
 import { call, takeEvery, put } from 'redux-saga/effects';
-import { ActiveMemberGetAction, ActiveMemberDeleteAction, ActiveMemberStatusAction, addMember,MemberOverviewAction,GetCommentAction,AddCommentAction } from '../Action/MemberAction';
+import { ActiveMemberGetAction, ActiveMemberDeleteAction, ActiveMemberStatusAction, addMember, GetMemberId,MemberOverviewAction,GetCommentAction,AddCommentAction } from '../Action/MemberAction';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'universal-cookie';
@@ -280,12 +280,36 @@ function refreshToken(response) {
 
 }
 
+function* handleGet_Member_Id(action) {
+
+
+    const response = yield call(GetMemberId, action.payload);
+
+
+    if (response.status === 200 || response.data.statusCode === 200) {
+        yield put({
+            type: 'GET_MEMBER_ID_SUCCESSS',
+            payload: { response: response.data, statusCode: response.status || response.data.statusCode },
+        });
+
+    } else if (response.status === 201 || response.statusCode === 201) {
+
+        yield put({ type: 'GET_MEMBER_ID_ERROR', payload: response.data.message });
+    }
+    if (response) {
+        refreshToken(response);
+    }
+
+
+}
+
 
 function* MemberSaga() {
     yield takeEvery('MEMBERLIST', handleMemberList);
     yield takeEvery('DELETEMEMBER', handledeleteMember);
     yield takeEvery('CHANGE_STATUS', handleStatusMember);
     yield takeEvery('MEMBERINFO', handleAddMember);
+    yield takeEvery('GET_MEMBER_ID', handleGet_Member_Id)
     yield takeEvery('MEMBEROVERVIEW',handleOverview);
     yield takeEvery('GETCOMMENTS',handleGetComment);
     yield takeEvery('ADDCOMMENTS',handleAddComment)
