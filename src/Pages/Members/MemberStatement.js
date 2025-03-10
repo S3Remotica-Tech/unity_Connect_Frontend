@@ -6,12 +6,16 @@ import RecordPaymentIcon from "../../Asset/Icons/RecordPayment.svg";
 import CloseCircle from "../../Asset/Icons/close-circle.svg";
 import { MdError } from "react-icons/md";
 
-function LoanStatements({ state, member }) {
+function MemberStatements({ state, member }) {
+
+
+
 
   const dispatch = useDispatch();
   const popupRef = useRef(null);
 
   const Statement = state.Member.getStatement;
+
 
   const [showOptions, setShowOptions] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,6 +24,7 @@ function LoanStatements({ state, member }) {
   const [dueDate, setDueDate] = useState('');
   const [paidAmount, setPaidAmount] = useState('');
   const [pendingAmount, setPendingAmount] = useState('');
+  const [loanId] = useState('');
   const [status, setStatus] = useState('');
   const [errors, setErrors] = useState({});
 
@@ -31,6 +36,13 @@ function LoanStatements({ state, member }) {
       });
     }
   }, [member?.Id]);
+
+  useEffect(() => {
+    if (state.Member.statusCodeForRecordPayment === 200) {
+      setIsModalOpen(false);
+      dispatch({ type: "CLEAR_STATUS_CODES_RECORD_PAYMENT" });
+    }
+  }, [state.Member.statusCodeForRecordPayment])
 
   const handleInputChange = (field, value) => {
     if (errors[field]) {
@@ -63,13 +75,24 @@ function LoanStatements({ state, member }) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
+      const payload = {
+        loan_amount: loanAmount,
+        due_date: dueDate,
+        pending_amount: pendingAmount,
+        status: status,
+        loan_id: loanId,
+      };
+
+      dispatch({
+        type: 'ADDRECORDPAYMENT',
+        payload: payload,
+      });
 
       setLoanAmount("");
       setDueDate("");
       setPaidAmount("");
       setPendingAmount("");
       setStatus("");
-
       setIsModalOpen(false);
     }
   };
@@ -159,23 +182,24 @@ function LoanStatements({ state, member }) {
               ))}
             </tbody>
           </table>
+
         </div>
       </div>
 
       {isModalOpen && (
 
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 font-[Gilroy]">
-          <div className="bg-white rounded-lg w-[90%] max-w-md p-6 shadow-lg rounded-3xl">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 font-Gilroy">
+          <div className="bg-white rounded-lg w-[90%] max-w-md p-4 shadow-lg rounded-3xl">
             <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
-              <h2 className="text-xl font-semibold text-center text-black">
+              <p className="text-lg font-semibold text-center text-black">
                 Record payment
-              </h2>
+              </p>
               <button onClick={handleClose} className="text-gray-500 hover:text-black">
                 <img src={CloseCircle} className="w-6 h-6" alt="CloseIcon" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="font-[Gilroy]">
+            <div className="font-Gilroy max-h-[300px] sm:max-h-[400px] overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="text-sm font-semibold">Loan Amount</label>
@@ -184,12 +208,11 @@ function LoanStatements({ state, member }) {
                     value={loanAmount}
                     onChange={(e) => handleInputChange("loanAmount", e.target.value)}
                     placeholder="Enter amount"
-                    className={`w-full border ${errors.loanAmount ? "border-red-500" : "border-gray-300"
-                      } rounded-lg px-3 py-2 mt-1 focus:outline-none placeholder-gray-500`}
+                    className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none"
                   />
                   {errors.loanAmount && (
-                    <div className="flex items-center text-red-500 text-xs mt-1 font-[Gilroy]">
-                      <MdError className="mr-1 text-sm" />
+                    <div className="flex items-center text-red-500 text-xs mt-1 font-Gilroy">
+                      <MdError className="mr-1 text-xs" />
                       {errors.loanAmount}
                     </div>
                   )}
@@ -201,12 +224,11 @@ function LoanStatements({ state, member }) {
                     type="date"
                     value={dueDate}
                     onChange={(e) => handleInputChange("dueDate", e.target.value)}
-                    className={`w-full border ${errors.dueDate ? "border-red-500" : "border-gray-300"
-                      } rounded-lg px-3 py-2 mt-1 focus:outline-none`}
+                    className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none"
                   />
                   {errors.dueDate && (
-                    <div className="flex items-center text-red-500 text-xs mt-1 font-[Gilroy]">
-                      <MdError className="mr-1 text-sm" />
+                    <div className="flex items-center text-red-500 text-xs mt-1 font-Gilroy">
+                      <MdError className="mr-1 text-xs" />
                       {errors.dueDate}
                     </div>
                   )}
@@ -219,12 +241,11 @@ function LoanStatements({ state, member }) {
                     value={paidAmount}
                     onChange={(e) => handleInputChange("paidAmount", e.target.value)}
                     placeholder="Enter amount"
-                    className={`w-full border ${errors.paidAmount ? "border-red-500" : "border-gray-300"
-                      } rounded-lg px-3 py-2 mt-1 focus:outline-none placeholder-gray-500`}
+                    className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none"
                   />
                   {errors.paidAmount && (
-                    <div className="flex items-center text-red-500 text-xs mt-1 font-[Gilroy]">
-                      <MdError className="mr-1 text-sm" />
+                    <div className="flex items-center text-red-500 text-xs mt-1 font-Gilroy">
+                      <MdError className="mr-1 text-xs" />
                       {errors.paidAmount}
                     </div>
                   )}
@@ -237,12 +258,11 @@ function LoanStatements({ state, member }) {
                     value={pendingAmount}
                     onChange={(e) => handleInputChange("pendingAmount", e.target.value)}
                     placeholder="Enter pending amount"
-                    className={`w-full border ${errors.pendingAmount ? "border-red-500" : "border-gray-300"
-                      } rounded-lg px-3 py-2 mt-1 focus:outline-none placeholder-gray-500`}
+                    className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none"
                   />
                   {errors.pendingAmount && (
-                    <div className="flex items-center text-red-500 text-xs mt-1 font-[Gilroy]">
-                      <MdError className="mr-1 text-sm" />
+                    <div className="flex items-center text-red-500 text-xs mt-1 font-Gilroy">
+                      <MdError className="mr-1 text-xs" />
                       {errors.pendingAmount}
                     </div>
                   )}
@@ -253,16 +273,15 @@ function LoanStatements({ state, member }) {
                   <select
                     value={status}
                     onChange={(e) => handleInputChange("status", e.target.value)}
-                    className={`w-full border ${errors.status ? "border-red-500" : "border-gray-300"
-                      } rounded-lg px-3 py-2 mt-1 focus:outline-none pl-4 placeholder-gray-500`}
+                    className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none"
                   >
                     <option value="">Select status</option>
                     <option value="Paid">Paid</option>
                     <option value="Unpaid">Unpaid</option>
                   </select>
                   {errors.status && (
-                    <div className="flex items-center text-red-500 text-xs mt-1 font-[Gilroy]">
-                      <MdError className="mr-1 text-sm" />
+                    <div className="flex items-center text-red-500 text-xs mt-1 font-Gilroy">
+                      <MdError className="mr-1 text-xs" />
                       {errors.status}
                     </div>
                   )}
@@ -271,10 +290,11 @@ function LoanStatements({ state, member }) {
               <button
                 type="submit"
                 className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                onClick={handleSubmit}
               >
                 Record payment
               </button>
-            </form>
+            </div>
 
           </div>
         </div>
@@ -286,10 +306,11 @@ function LoanStatements({ state, member }) {
 const mapsToProps = (stateInfo) => {
   return { state: stateInfo };
 };
-LoanStatements.propTypes = {
+
+MemberStatements.propTypes = {
   state: PropTypes.object,
   member: PropTypes.object
 };
 
-export default connect(mapsToProps)(LoanStatements);
+export default connect(mapsToProps)(MemberStatements);
 

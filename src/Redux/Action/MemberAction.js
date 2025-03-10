@@ -50,6 +50,7 @@ export async function addMember(params) {
 }
 
 export async function GetMemberId(params) {
+
     return await AxiosConfig.post('/member/get_member_id', params, {
         data: params
     });
@@ -83,4 +84,36 @@ export async function GetStatementAction(statement) {
     return await AxiosConfig.post('/member/get_member_statement', statement, {
         data: statement
     });
+}
+export async function TransactionsAction() {
+
+    return await AxiosConfig.get('', {
+
+    });
+}
+
+
+export async function RecordPaymentAction(params) {
+
+    const formData = new FormData();
+
+    if (params.loan_amount) formData.append("loan_amount", params.loan_amount);
+    if (params.due_date) formData.append("due_date", params.due_date);
+    if (params.pending_amount) formData.append("pending_amount", params.pending_amount);
+    if (params.status) formData.append("status", params.status);
+    if (params.id) formData.append("id", params.id);
+    if (params.loan_id) formData.append("loan_id", params.loan_id);
+
+    try {
+        const response = await AxiosConfig.post('/loan/add_record_payment', formData, {
+            headers: {
+                "Content-type": "multipart/form-data",
+            },
+            timeout: 100000000,
+            onUploadProgress: () => { }
+        });
+        return response.data;
+    } catch (error) {
+        console.log("No error", error);
+    }
 }

@@ -10,7 +10,6 @@ export const initialState = {
     Users: [],
     addUser: '',
     statusCodeForAddUser: 0,
-    statusCodeClearForAddUser: 0,
     phoneError: '',
     emailError: '',
     overview: '',
@@ -24,11 +23,18 @@ export const initialState = {
     GetMemberId: [],
     statusCodeForMemberId: 0,
     MemberIdErrorMsg: '',
+    GetTransactionsList: [],
+    statusCodeTransactions: 0,
+    TransactionsErrorMsg: '',
+    addRecordPayment: [],
+    statusCodeForRecordPayment: 0,
+    recordPaymentErrorMessage: '',
+
+
 
 
 }
 const MemberListReducer = (state = initialState, action) => {
-
 
     switch (action.type) {
 
@@ -57,12 +63,8 @@ const MemberListReducer = (state = initialState, action) => {
 
         case 'ADD_USER_SUCCESS':
             return { ...state, addUser: action.payload.response, statusCodeForAddUser: action.payload.statusCode }
-        case 'EDIT_USER_SUCCESS':
-            return { ...state, EditUser: action.payload.message, statusCodeForEditUser: action.payload.statusCode }
         case 'CLEAR_STATUS_CODES':
             return { ...state, statusCodeClearForAddUser: 0 }
-        case 'EDIT_CLEAR_STATUS_CODES':
-            return { ...state, statusCodeClearForEditUser: 0 }
         case 'PHONE_ERROR':
             return { ...state, phoneError: action.payload }
 
@@ -75,7 +77,7 @@ const MemberListReducer = (state = initialState, action) => {
         case 'GET_MEMBER_ID_SUCCESSS':
             return { ...state, GetMemberId: action.payload.response, statusCodeForMemberId: action.payload.response }
         case 'GET_MEMBER_ID_ERROR':
-            return { ...state, MemberIdErrorMsg: action.payload.message }         
+            return { ...state, MemberIdErrorMsg: action.payload.message }
         case 'OVERVIEW_MEMBER':
             return { ...state, overview: action.payload.response, statusCodeForOverview: action.payload.statusCode }
         case 'CLEAR_OVERVIEW_MEMBER':
@@ -97,6 +99,19 @@ const MemberListReducer = (state = initialState, action) => {
         case 'CLEAR_STATUS_CODE_GET_STATEMENT':
             return { ...state, statusCodeForStatement: 0 }
 
+        case 'GET_TRANSACTIONS_LIST':
+            return { ...state, GetTransactionsList: action.payload.response, statusCodeTransactions: action.payload.response }
+        case 'GET_TRANSACTIONS_ERROR':
+            return { ...state, TransactionsErrorMsg: action.payload.message }
+        case 'CLEAR_STATUS_CODE_TRANSACTIONS':
+            return { ...state, statusCodeTransactions: 0 }
+
+        case 'ADD_RECORD_PAYMENT':
+            return { ...state, addRecordPayment: action.payload.response, statusCodeForRecordPayment: action.payload.statusCode }
+        case 'CLEAR_STATUS_CODES_RECORD_PAYMENT':
+            return { ...state, statusCodeForRecordPayment: 0 }
+        case 'RECORD_PAYMENT_ERROR_MSG':
+            return { ...state, recordPaymentErrorMessage: '' }
         default:
             return state;
 

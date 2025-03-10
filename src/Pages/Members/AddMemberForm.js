@@ -39,15 +39,6 @@ function MemberModal({ state, memberData, onClose }) {
 
 
     useEffect(() => {
-
-        if (state.Member.statusCodeForAddUser === 200) {
-            dispatch({ type: 'MEMBERLIST' });
-            dispatch({ type: 'CLEAR_STATUS_CODES' })
-        }
-    }, [state.Member.statusCodeForAddUser]);
-
-
-    useEffect(() => {
         dispatch({ type: 'GET_MEMBER_ID' });
     }, []);
 
@@ -55,8 +46,7 @@ function MemberModal({ state, memberData, onClose }) {
         setNoChanges("");
     }, [memberId, userName, email, mobileNo, address, joiningDate, file]);
 
-
-    const formattedDate = moment(memberData.Joining_Date).format("YYYY-MM-DD");
+    const formattedDate = joiningDate ? moment(joiningDate).format("YYYY-MM-DD") : "";
 
 
     const validate = () => {
@@ -64,11 +54,20 @@ function MemberModal({ state, memberData, onClose }) {
         if (!userName) tempErrors.userName = "User Name is required";
         if (!email) tempErrors.email = "Email is required";
         if (!joiningDate) tempErrors.joiningDate = "Joining Date is required";
+        // if (!mobileNo) {
+        //     tempErrors.mobileNo = "Mobile number is required";
+        // } else if (!/^\d{10}$/.test(mobileNo)) {
+        //     tempErrors.mobileNo = "Mobile number must be exactly 10 digits";
+        // }
         if (!mobileNo) {
             tempErrors.mobileNo = "Mobile number is required";
         } else if (!/^\d{10}$/.test(mobileNo)) {
             tempErrors.mobileNo = "Mobile number must be exactly 10 digits";
         }
+        if (mobileNo.length > 10) {
+            tempErrors.mobileNo = "Mobile number cannot exceed 10 digits";
+        }
+        
 
         if (!address) tempErrors.address = "Address is required";
         setErrors(tempErrors);
@@ -130,11 +129,11 @@ function MemberModal({ state, memberData, onClose }) {
             userName.trim() !== (memberData.User_Name || '').trim() ||
             email.trim() !== (memberData.Email_Id || '').trim() ||
             String(mobileNo).trim() !== String((memberData.Mobile_No || '')).trim() ||
-            ((joiningDate && memberData.Joining_date) &&
-                moment(joiningDate).format('YYYY-MM-DD') !== moment(memberData.Joining_date).format('YYYY-MM-DD')) ||
+            joiningDate.trim() !== (memberData.joining_date || '').trim() ||
             address.trim() !== (memberData.Address || '').trim() ||
             (file && file.name !== memberData.file)
         );
+
 
 
         if (memberData && !isChanged) {
@@ -174,16 +173,17 @@ function MemberModal({ state, memberData, onClose }) {
 
         setNoChanges("");
         onClose();
+        dispatch({ type: 'MEMBERLIST' });
     };
 
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-5 rounded-2xl shadow-lg w-full max-w-lg relative">
+            <div className="bg-white p-4 rounded-2xl shadow-lg w-full max-w-md relative overflow-y-auto">
                 <div className="flex items-center justify-between border-b pb-2 mb-4">
-                    <h2 className="font-sans font-semibold font-Gilroy text-lg leading-6 tracking-normal">
+                    <p className="font-semibold font-Gilroy text-lg leading-6 tracking-normal">
                         {memberData ? "Edit Member" : "Add a Member"}
-                    </h2>
+                    </p>
                     <button data-testid='button-close' className="text-gray-600" onClick={handleClose}>
                         <img src={closecircle} alt="Close" className="w-6 h-6" />
                     </button>
@@ -196,39 +196,73 @@ function MemberModal({ state, memberData, onClose }) {
                             <input
                                 data-testid='input-member-id'
                                 type="text"
-                                className="w-full p-2 h-10 border rounded-lg"
+                                className="w-full p-2 h-10 border rounded-lg text-sm"
                                 value={state?.Member?.GetMemberId?.memberId || ''}
                                 readOnly
                             />
                             {errors.memberId && (
                                 <p className="text-red-500 flex items-center gap-1 mt-1 text-xs">
-                                    <MdError size={14} /> {errors.memberId}
+                                    <MdError className="text-xs" /> {errors.memberId}
                                 </p>
                             )}
                         </div>
 
-
                         <div className="w-1/2">
                             <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">User Name</label>
-                            <input data-testid='input-user-name' type="text" className="w-full p-2 h-10 border rounded-lg"
+                            <input
+                                data-testid='input-user-name'
+                                type="text"
+                                className="w-full p-2 h-10 border rounded-lg text-sm"
+                                placeholder="Enter User Name"
                                 value={userName}
-                                onChange={(e) => handleChange("userName", e.target.value)} />
-                            {errors.userName && <p className="text-red-500 flex items-center gap-1 mt-1 text-xs"><MdError size={14} /> {errors.userName}</p>}
+                                onChange={(e) => handleChange("userName", e.target.value)}
+                            />
+                            {errors.userName && (
+                                <p className="text-red-500 flex items-center gap-1 text-xs">
+                                    <MdError  /> {errors.userName}
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex gap-4">
                         <div className="w-1/2">
                             <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">Email</label>
-                            <input data-testid='input-member-email' type="email" className="w-full p-2 h-10 border rounded-lg"
+                            <input
+                                data-testid='input-member-email'
+                                type="email"
+                                className="w-full p-2 h-10 border rounded-lg text-sm"
+                                placeholder="Enter Email"
                                 value={email}
-                                onChange={(e) => handleChange("email", e.target.value)} />
-                            {errors.email && <p className="text-red-500 flex items-center gap-1 mt-1 text-xs"><MdError size={14} /> {errors.email}</p>}
+                                onChange={(e) => handleChange("email", e.target.value)}
+                            />
+                            {errors.email && (
+                                <p className="text-red-500 flex items-center gap-1 text-xs">
+                                    <MdError className="text-xs" /> {errors.email}
+                                </p>
+                            )}
                         </div>
+
                         <div className="w-1/2">
                             <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">Mobile No.</label>
-                            <input data-testid='input-member-phone' type="text" className="w-full p-2 h-10 border rounded-lg" value={mobileNo} onChange={(e) => handleChange("mobileNo", e.target.value)} />
-                            {errors.mobileNo && <p className="text-red-500 flex items-center gap-1 mt-1 text-xs"><MdError size={14} /> {errors.mobileNo}</p>}
+                            <input
+                                data-testid='input-member-phone'
+                                type="text"
+                                className="w-full p-2 h-10 border rounded-lg text-sm"
+                                placeholder="Enter Mobile No."
+                                value={mobileNo}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (/^\d*$/.test(value) && value.length <= 10) {
+                                        handleChange("mobileNo", value);
+                                    }
+                                }}
+                            />
+                            {errors.mobileNo && (
+                                <p className="text-red-500 flex items-center gap-1 text-xs">
+                                    <MdError className="text-xs" /> {errors.mobileNo}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -237,19 +271,32 @@ function MemberModal({ state, memberData, onClose }) {
                         <input
                             data-testid='input-joining-data'
                             type="date"
-                            className="w-56 p-2 h-10 border rounded-lg"
-                            value={joiningDate ? formattedDate : ""}
+                            className="w-56 p-2 h-10 border rounded-lg text-sm"
+                            placeholder="Select Joining Date"
+                            value={formattedDate}
                             onChange={(e) => handleChange("joiningDate", e.target.value)}
                         />
-                        {errors.joiningDate && <p className="text-red-500 flex items-center gap-1 mt-1 text-xs"><MdError size={14} /> {errors.joiningDate}</p>}
+                        {errors.joiningDate && (
+                            <p className="text-red-500 flex items-center gap-1 text-xs">
+                                <MdError className="text-xs" /> {errors.joiningDate}
+                            </p>
+                        )}
                     </div>
 
                     <div>
                         <label className="block font-medium font-Gilroy text-sm tracking-normal mb-1">Address</label>
-                        <textarea data-testid='input-member-address' className="w-full p-2 border rounded-lg h-10"
+                        <textarea
+                            data-testid='input-member-address'
+                            className="w-full p-2 border rounded-lg h-10 text-sm"
+                            placeholder="Enter Address"
                             value={address}
-                            onChange={(e) => handleChange("address", e.target.value)} />
-                        {errors.address && <p className="text-red-500 flex items-center gap-1 text-xs"><MdError size={14} /> {errors.address}</p>}
+                            onChange={(e) => handleChange("address", e.target.value)}
+                        />
+                        {errors.address && (
+                            <p className="text-red-500 flex items-center gap-1 text-xs -mt-1">
+                                <MdError className="text-xs" /> {errors.address}
+                            </p>
+                        )}
                     </div>
 
                     <div className="">
@@ -268,11 +315,18 @@ function MemberModal({ state, memberData, onClose }) {
                             <p>{noChanges}</p>
                         </div>
                     )}
-                    <div className="mt-2">
-                        <button type="submit" className="w-full bg-black text-white p-2 rounded-lg"
-                            onClick={handleSubmit}>{memberData ? "Save Changes" : "Add Member"}</button>
+
+                    <div>
+                        <button
+                            type="submit"
+                            className="mt-2 w-full bg-black text-white p-2 rounded-3xl font-Gilroy font-semibold text-sm"
+                            onClick={handleSubmit}
+                        >
+                            {memberData ? "Save Changes" : "Add Member"}
+                        </button>
                     </div>
                 </div>
+
             </div>
         </div>
     );

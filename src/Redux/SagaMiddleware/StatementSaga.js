@@ -9,7 +9,7 @@ function* handleStatementList() {
     const response = yield call(StatementAction);
 
     if (response.statusCode === 200 || response.status === 200) {
-
+        
         yield put({
             type: 'GET_STATEMENT_LIST',
             payload: { response: response.data, statusCode: response.statusCode || response.status },

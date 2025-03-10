@@ -1,6 +1,16 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React from "react";
+import { connect } from "react-redux";
+import PropTypes from 'prop-types';
 
-const Transactions = () => {
+   
+
+    function Transactions() {
+
+
+  // useEffect = (() => {
+  //   dispatch({ type: 'GETTRANSACTIONS' })
+  // }, [])
 
   const statements = [
     { transactions: "Repayment Apr 2024", dateTime: "16 Apr 2024, 10:00 AM", transactionId: "SBI0056123", amount: "+₹5,000", status: "Success" },
@@ -21,7 +31,7 @@ const Transactions = () => {
           <table className="w-full text-left border-collapse min-w-max">
             <thead>
               <tr style={{ color: "#939393" }} className="bg-blue-50 border-b font-light text-sm font-Gilroy">
-                
+
                 <th className="p-4 font-Gilroy">Transactions</th>
                 <th className="p-4 font-Gilroy">Date & Time</th>
                 <th className="p-4 font-Gilroy">Transaction Id</th>
@@ -33,7 +43,7 @@ const Transactions = () => {
             <tbody>
               {statements.map((item, index) => (
                 <tr key={index} className="">
-                 
+
                   <td className="p-4 font-Gilroy">{item.transactions}</td>
                   <td className="p-4">
                     <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-Gilroy">
@@ -66,5 +76,14 @@ const Transactions = () => {
     </div>
   );
 };
+const mapsToProps = (stateInfo) => {
+  return {
+    state: stateInfo,
+  };
+};
 
-export default Transactions;
+Transactions.propTypes = {
+  state: PropTypes.object,
+};
+
+export default connect(mapsToProps)(Transactions);

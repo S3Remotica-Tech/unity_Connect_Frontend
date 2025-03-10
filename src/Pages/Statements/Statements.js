@@ -12,6 +12,7 @@ import moment from "moment";
 
 function Statement({ state }) {
 
+  
   const dispatch = useDispatch();
   const popupRef = useRef(null);
 
@@ -21,7 +22,7 @@ function Statement({ state }) {
   const formattingDueDate = moment(statementList?.Due_Date).format("DD-MM-YYYY");
 
   const [menuOpen, setMenuOpen] = useState(null);
-  const [activeTab, setActiveTab] = useState("Loan statement");
+
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -50,16 +51,9 @@ function Statement({ state }) {
 
       <div className="flex gap-2 md:gap-4 mb-4">
         <button
-          onClick={() => setActiveTab("Loan statement")}
-          className={`font-Gilroy font-medium px-2 md:px-4 py-2 border-b-2 ${activeTab === "Loan statement" ? "border-gray-800 text-gray-800" : "border-transparent text-gray-500"}`}
+          className="font-Gilroy font-semibold px-2 md:px-4 py-2 text-gray-800"
         >
           Loan statement
-        </button>
-        <button
-          onClick={() => setActiveTab("Subscriber statement")}
-          className={`font-Gilroy font-medium px-2 md:px-4 py-2 border-b-2 ${activeTab === "Subscriber statement" ? "border-gray-800 text-gray-800" : "border-transparent text-gray-500"}`}
-        >
-          Subscriber statement
         </button>
       </div>
 

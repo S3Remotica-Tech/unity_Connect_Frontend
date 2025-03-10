@@ -7,7 +7,7 @@ export const initialState = {
 
 }
 const StatementReducer = (state = initialState, action) => {
- 
+  
     switch (action.type) {
 
         case 'GET_STATEMENT_LIST':
